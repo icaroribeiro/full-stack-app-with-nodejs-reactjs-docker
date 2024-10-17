@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status'
 import { AnyZodObject, ZodError, ZodOptional } from 'zod'
 
-import { ErrorResponse } from '../shared'
+import { APIErrorResponse } from '../shared'
 
 function validationMiddleware(
   schema: AnyZodObject | ZodOptional<AnyZodObject>,
@@ -21,7 +21,7 @@ function validationMiddleware(
         const context = error.errors.map((issue) => ({
           message: `${issue.path.join('.')} is ${issue.message}`,
         }))
-        const response: ErrorResponse = {
+        const response: APIErrorResponse = {
           message: message,
           details: { context: context, cause: error },
           isOperational: true,
@@ -31,7 +31,7 @@ function validationMiddleware(
 
       if (error instanceof Error) {
         const message = 'An error occurred when validating user inputs'
-        const response: ErrorResponse = {
+        const response: APIErrorResponse = {
           message: message,
           details: { context: 'unknown', cause: error },
           isOperational: true,

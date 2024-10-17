@@ -1,26 +1,16 @@
 import { INTERNAL_SERVER_ERROR, NOT_FOUND } from 'http-status'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { db } from '../../../../db/db'
 import { UserFactory } from '../../../../factories/helpers/user-factory'
+import { DBService } from '../../../../services'
 import { ServerError } from '../../../server-error'
 import { User, UserList } from '../user-models'
 import { UserRepository } from '../user-repository'
 import { UserService } from '../user-service'
 
-vi.mock('../../db/db', (importOriginal) => {
-  const original = importOriginal<typeof import('../../../../db/db')>()
-  return {
-    ...original,
-    db: vi.fn(),
-  }
-})
-
 describe('UserService', () => {
-  const mockedDB = vi.mocked(
-    db.connect('postgresql://pgtestuser:pgtestsecret@localhost:1234/pgtestdb'),
-  )
-  const mockedUserRepository = new UserRepository(mockedDB)
+  const mockedDBService = new DBService()
+  const mockedUserRepository = new UserRepository(mockedDBService)
   const userFactory = new UserFactory()
 
   afterEach(() => {

@@ -39,7 +39,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.createUser(mockedUser)
 
       const rowCount = 1
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result.id).not.toBeUndefined()
       expect(result.name).toEqual(expectedResult.name)
       expect(result.email).toEqual(expectedResult.email)
@@ -57,7 +59,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.readUserList()
 
       const rowCount = 0
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result).toHaveLength(0)
     })
 
@@ -78,7 +82,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.readUserList()
 
       const rowCount = 3
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(new Set(result)).toEqual(new Set(expectedResult))
     })
   })
@@ -96,7 +102,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.readUser(mockedUser.id as string)
 
       const rowCount = 0
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result).toBeUndefined()
     })
 
@@ -114,7 +122,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.readUser(mockedUser.id as string)
 
       const rowCount = 1
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result.id).toEqual(expectedResult.id)
       expect(result.name).toEqual(expectedResult.name)
       expect(result.email).toEqual(expectedResult.email)
@@ -138,7 +148,9 @@ describe('UserRepository', async () => {
       )
 
       const rowCount = 0
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result).toBeUndefined()
     })
 
@@ -161,7 +173,9 @@ describe('UserRepository', async () => {
       )
 
       const rowCount = 1
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result.id).toEqual(expectedResult.id)
       expect(result.name).toEqual(expectedResult.name)
       expect(result.email).toEqual(expectedResult.email)
@@ -181,7 +195,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.deleteUser(mockedUser.id as string)
 
       const rowCount = 0
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result).toBeUndefined()
     })
 
@@ -199,7 +215,9 @@ describe('UserRepository', async () => {
       const result = await userRepository.deleteUser(mockedUser.id as string)
 
       const rowCount = 0
-      await expect(factory.getTableRowCount('users')).resolves.toEqual(rowCount)
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
       expect(result.id).toEqual(expectedResult.id)
       expect(result.name).toEqual(expectedResult.name)
       expect(result.email).toEqual(expectedResult.email)
