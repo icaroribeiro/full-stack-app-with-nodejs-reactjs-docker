@@ -20,7 +20,7 @@ import { inject, injectable } from 'tsyringe'
 
 import { IPaginationService } from '../../../services'
 import { validationMiddleware } from '../../middlewares'
-import { APIErrorResponse, APIPaginatedEntityResponse } from '../../shared'
+import { APIErrorResponse, APIPaginationResponse } from '../../shared'
 import { paginationQueryParamsValidator, userValidator } from '../../validators'
 import { UserMapper } from './user-mapper'
 import { UserDTO } from './user-models'
@@ -76,7 +76,7 @@ class UserController extends Controller {
    * @param limit The number of records per page. If isn't provided, it will be set to 1.
    */
   @Get('/')
-  @Response<APIPaginatedEntityResponse<UserDTO>>('200', 'OK', {
+  @Response<APIPaginationResponse<UserDTO>>('200', 'OK', {
     page: 1,
     limit: 1,
     totalPages: 1,
@@ -90,11 +90,11 @@ class UserController extends Controller {
     ],
   })
   @Middlewares(validationMiddleware(paginationQueryParamsValidator))
-  public async fetchUserListWithPagination(
+  public async fetchUsers(
     @Request() req: express.Request,
     @Query() page?: number,
     @Query() limit?: number,
-  ): Promise<APIPaginatedEntityResponse<UserDTO>> {
+  ): Promise<APIPaginationResponse<UserDTO>> {
     const baseURL = `${req.protocol}://${req.get('host')}${req.originalUrl}`
     const parsedQuery = paginationQueryParamsValidator.parse({
       query: { page: page, limit: limit },

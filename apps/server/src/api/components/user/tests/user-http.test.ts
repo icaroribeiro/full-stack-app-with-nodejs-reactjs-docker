@@ -14,8 +14,7 @@ import { config } from '../../../../config/config'
 import { UserFactory } from '../../../../factories/helpers/user-factory'
 import { HttpTestFactory } from '../../../../factories/http-factory'
 import { DBService } from '../../../../services'
-import { UserMapper } from '../user-mapper'
-import { User, UserList } from '../user-models'
+import { User, UserList, UserMapper } from '..'
 
 describe('User HTTP component', () => {
   const factory: HttpTestFactory = new HttpTestFactory()
@@ -67,14 +66,70 @@ describe('User HTTP component', () => {
     })
   })
 
+  // describe('GET /users', () => {
+  //   const endpoint = '/users'
+  //   const url = `http://localhost:${config.getPort()}${endpoint}`
+  //   let response: Response
+  //   let body: Array<Record<string, unknown>>
+
+  //   it('should succeed and return an empty list of users', async () => {
+  //     response = await fetch(url)
+  //     body = (await response.json()) as Array<Record<string, unknown>>
+
+  //     const rowCount = 0
+  //     await expect(
+  //       factory.dbService.getDatabaseTableRowCount('users'),
+  //     ).resolves.toEqual(rowCount)
+  //     expect(response.status).toBe(OK)
+  //     expectTypeOf(body).toBeArray()
+  //     expect(body).toHaveLength(0)
+  //   })
+
+  //   it('should succeed and return a list of users', async () => {
+  //     const count = 3
+  //     const mockedUserList: UserList = userFactory.buildMany(count)
+  //     for (const mockedUser of mockedUserList) {
+  //       const rawUserData = UserMapper.toPersistence(mockedUser)
+  //       const insertedUser = await dbService.db
+  //         .insert(schemas.usersTable)
+  //         .values(rawUserData)
+  //         .returning()
+  //       mockedUser.id = UserMapper.toDomain(insertedUser[0]).id
+  //     }
+  //     const expectedResult = mockedUserList
+
+  //     response = await fetch(url)
+  //     body = (await response.json()) as Array<Record<string, unknown>>
+
+  //     const rowCount = 3
+  //     await expect(
+  //       factory.dbService.getDatabaseTableRowCount('users'),
+  //     ).resolves.toEqual(rowCount)
+  //     expect(response.status).toBe(OK)
+  //     expectTypeOf(body).toBeArray()
+  //     expect(body).toHaveLength(3)
+  //     expect(new Set(body.map((u) => UserMapper.toDomain(u)))).toEqual(
+  //       new Set(expectedResult),
+  //     )
+  //   })
+  // })
+
   describe('GET /users', () => {
     const endpoint = '/users'
-    const url = `http://localhost:${config.getPort()}${endpoint}`
     let response: Response
     let body: Array<Record<string, unknown>>
 
-    it('should succeed and return an empty list', async () => {
-      response = await fetch(url)
+    it('should succeed and return an empty list of users with total zero', async () => {
+      const baseURL = `http://localhost:${config.getPort()}${endpoint}`
+      const expectedResult = {
+        page: 1,
+        limit: 1,
+        totalPages: 0,
+        totalRecords: 0,
+        records: [],
+      }
+
+      response = await fetch(baseURL)
       body = (await response.json()) as Array<Record<string, unknown>>
 
       const rowCount = 0
@@ -82,11 +137,11 @@ describe('User HTTP component', () => {
         factory.dbService.getDatabaseTableRowCount('users'),
       ).resolves.toEqual(rowCount)
       expect(response.status).toBe(OK)
-      expectTypeOf(body).toBeArray()
-      expect(body).toHaveLength(0)
+      expectTypeOf(body).toBeObject()
+      expect(body).toEqual(expectedResult)
     })
 
-    it('should succeed and return a list of users', async () => {
+    it('should succeed and return a list of users with non-zero total when page is the first one and can be filled', async () => {
       const count = 3
       const mockedUserList: UserList = userFactory.buildMany(count)
       for (const mockedUser of mockedUserList) {
@@ -97,9 +152,21 @@ describe('User HTTP component', () => {
           .returning()
         mockedUser.id = UserMapper.toDomain(insertedUser[0]).id
       }
-      const expectedResult = mockedUserList
+      const page = 1
+      const limit = 1
+      const baseURL = `http://localhost:${config.getPort()}${endpoint}?page=${page}&limit=${limit}`
+      let next = baseURL
+      next = next.replace(/(page=)[^&]+/, '$1' + `${page + 1}`)
+      const expectedResult = {
+        page: 1,
+        limit: 1,
+        totalPages: 3,
+        totalRecords: 3,
+        records: [UserMapper.toDTO(mockedUserList[mockedUserList.length - 1])],
+        next: next,
+      }
 
-      response = await fetch(url)
+      response = await fetch(baseURL)
       body = (await response.json()) as Array<Record<string, unknown>>
 
       const rowCount = 3
@@ -107,11 +174,45 @@ describe('User HTTP component', () => {
         factory.dbService.getDatabaseTableRowCount('users'),
       ).resolves.toEqual(rowCount)
       expect(response.status).toBe(OK)
-      expectTypeOf(body).toBeArray()
-      expect(body).toHaveLength(3)
-      expect(new Set(body.map((u) => UserMapper.toDomain(u)))).toEqual(
-        new Set(expectedResult),
-      )
+      expectTypeOf(body).toBeObject()
+      expect(body).toEqual(expectedResult)
+    })
+
+    it('should succeed and return a list of users with non-zero total when page is not the first one and can be filled', async () => {
+      const count = 5
+      const mockedUserList: UserList = userFactory.buildMany(count)
+      for (const mockedUser of mockedUserList) {
+        const rawUserData = UserMapper.toPersistence(mockedUser)
+        const insertedUser = await dbService.db
+          .insert(schemas.usersTable)
+          .values(rawUserData)
+          .returning()
+        mockedUser.id = UserMapper.toDomain(insertedUser[0]).id
+      }
+      const page = 3
+      const limit = 2
+      const baseURL = `http://localhost:${config.getPort()}${endpoint}?page=${page}&limit=${limit}`
+      let previous = baseURL
+      previous = previous.replace(/(page=)[^&]+/, '$1' + `${page - 1}`)
+      const expectedResult = {
+        page: 3,
+        limit: 2,
+        totalPages: 3,
+        totalRecords: 5,
+        records: [UserMapper.toDTO(mockedUserList[0])],
+        previous: previous,
+      }
+
+      response = await fetch(baseURL)
+      body = (await response.json()) as Array<Record<string, unknown>>
+
+      const rowCount = 5
+      await expect(
+        factory.dbService.getDatabaseTableRowCount('users'),
+      ).resolves.toEqual(rowCount)
+      expect(response.status).toBe(OK)
+      expectTypeOf(body).toBeObject()
+      expect(body).toEqual(expectedResult)
     })
   })
 

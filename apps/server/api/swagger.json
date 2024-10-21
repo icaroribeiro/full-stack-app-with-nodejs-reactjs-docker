@@ -53,7 +53,7 @@
 				],
 				"type": "object"
 			},
-			"APIPaginatedEntityResponse_UserDTO_": {
+			"APIPaginationResponse_UserDTO_": {
 				"properties": {
 					"next": {
 						"type": "string"
@@ -221,14 +221,14 @@
 				}
 			},
 			"get": {
-				"operationId": "FetchUserListWithPagination",
+				"operationId": "FetchUsers",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/APIPaginatedEntityResponse_UserDTO_"
+									"$ref": "#/components/schemas/APIPaginationResponse_UserDTO_"
 								}
 							}
 						}
