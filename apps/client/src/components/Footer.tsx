@@ -5,7 +5,8 @@ function Footer() {
     <footer>
       <div className="footer-div">
         <p className="copyright">
-          © {new Date().getFullYear()} My React App. All rights reserved.
+          © {new Date().getFullYear()} My Take-Home Assignment. All rights
+          reserved.
         </p>
       </div>
     </footer>
